@@ -13,6 +13,8 @@ import math
 
 import matplotlib.pyplot as plt
 
+import pickle
+
 show_animation = True
 
 
@@ -27,7 +29,7 @@ class AStarPlanner:
         resolution: grid resolution [m]
         rr: robot radius[m]
         """
-
+        self.obstacle_map_filename = "../../obstacle_map.pkl"
         self.resolution = resolution
         self.rr = rr
         self.min_x, self.min_y = 0, 0
