@@ -1,0 +1,16 @@
+{
+    "python.autoComplete.extraPaths": [
+        "/home/ruziniu/Projects/ME5413/ME5413_Planning_Project_Group20/devel/lib/python3/dist-packages",
+        "/home/ruziniu/ws_livox/devel/lib/python3/dist-packages",
+        "/home/ruziniu/Projects/ME5413/ME5413_Homework2/Task_2/devel/lib/python3/dist-packages",
+        "/home/ruziniu/Projects/ROS/catkin_ws/install_isolated/lib/python3/dist-packages",
+        "/opt/ros/noetic/lib/python3/dist-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "/home/ruziniu/Projects/ME5413/ME5413_Planning_Project_Group20/devel/lib/python3/dist-packages",
+        "/home/ruziniu/ws_livox/devel/lib/python3/dist-packages",
+        "/home/ruziniu/Projects/ME5413/ME5413_Homework2/Task_2/devel/lib/python3/dist-packages",
+        "/home/ruziniu/Projects/ROS/catkin_ws/install_isolated/lib/python3/dist-packages",
+        "/opt/ros/noetic/lib/python3/dist-packages"
+    ]
+}

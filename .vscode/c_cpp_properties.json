@@ -1,0 +1,28 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/home/ruziniu/Projects/ME5413/ME5413_Planning_Project_Group20/devel/include/**",
+        "/home/ruziniu/ws_livox/devel/include/**",
+        "/home/ruziniu/Projects/ROS/catkin_ws/install_isolated/include/**",
+        "/opt/ros/noetic/include/**",
+        "/home/ruziniu/Projects/ME5413/ME5413_Homework2/Task_2/devel/include/**",
+        "/home/ruziniu/Projects/ROS/catkin_aloam_ws/src/A-LOAM/include/**",
+        "/home/ruziniu/ws_livox/src/FAST_LIO/include/**",
+        "/home/ruziniu/Projects/ME5413/ME5413_Homework2/Task_2/src/LeGO-LOAM/LeGO-LOAM/include/**",
+        "/home/ruziniu/Projects/ME5413/ME5413_Planning_Project_Group20/src/me5413_world/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}

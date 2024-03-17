@@ -205,6 +205,14 @@ class AStarPlanner:
         print("y_width:", self.y_width)
 
         # obstacle map generation
+        try:
+            with open(self.obstacle_map_filename, "rb") as f:
+                self.obstacle_map = pickle.load(f)
+            print("Loaded obstacle map from file")
+            return
+        except FileNotFoundError:
+            pass
+
         self.obstacle_map = [[False for _ in range(self.y_width)]
                              for _ in range(self.x_width)]
         for ix in range(self.x_width):
@@ -216,6 +224,11 @@ class AStarPlanner:
                     if d <= self.rr:
                         self.obstacle_map[ix][iy] = True
                         break
+        
+        # Save the generated obstacle map to a file
+        with open(self.obstacle_map_filename, "wb") as f:
+            pickle.dump(self.obstacle_map, f)
+        print("Saved obstacle map to file.")
 
     @staticmethod
     def get_motion_model():
