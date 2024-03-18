@@ -33,7 +33,7 @@ def heuristic(node, goal, resolution=0.2):
     :param goal: Target node coordinates.
     :param resolution: Map resolution.
     """
-    dis = euclidean(node, goal) * resolution
+    dis = euclidean(node, goal)
     print(f"Heuristic calculated for node {node} to goal {goal}: {dis}")
     return dis
 
