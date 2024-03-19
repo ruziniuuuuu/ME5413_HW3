@@ -49,11 +49,6 @@ class A_Start:
                                      self.calc_heuristic(goal_node, open_set[o]))
             current = open_set[c_id]
 
-            # if show_animation:
-            #             #     plt.plot(self.calc_position(current.x, self.min_x),
-            #             #              self.calc_position(current.y, self.min_y), 'xc')
-            #             #     plt.pause(0.0001)
-
             if current.x == goal_node.x and current.y == goal_node.y:
                 print("到达终点。")
                 goal_node.cost = current.cost

@@ -2,7 +2,9 @@ import math
 import matplotlib.pyplot as plt
 from PIL import Image
 import numpy as np
+import time
 
+show_animation = True
 
 class Dijkstra:
     def __init__(self, obstacle_map, resolution, robot_radius):
@@ -26,6 +28,7 @@ class Dijkstra:
 
     def planning(self, sx, sy, gx, gy):
         print("Start path planning...")
+        start_time = time.time()
         start_node = self.Node(self.calc_xy_index(sx, self.min_x),
                                self.calc_xy_index(sy, self.min_y), 0.0, -1)
         goal_node = self.Node(self.calc_xy_index(gx, self.min_x),
@@ -64,12 +67,13 @@ class Dijkstra:
                     open_set[n_id] = node
 
         print("Path planning completed.")
+        end_time = time.time()
+        running_time = end_time - start_time
+        print(f"Running time: {running_time:.2f} seconds")
         rx, ry = self.calc_final_path(goal_node, closed_set)
+        distance = goal_node.cost * self.resolution
+        print(f"Total distance: {distance:.2f} meters")
         return rx, ry
-
-
-
-
 
     # Robot movement model, able to move to any of the 8 surrounding grid cells in each step
     @staticmethod
@@ -85,46 +89,49 @@ class Dijkstra:
                   [1, 1, math.sqrt(2)]]  # Up-Right
         return motion
 
+    def calc_obstacle_map(self, ox, oy):
+        print("Start calculating obstacle map...")
+        self.min_x = min(ox)
+        self.min_y = min(oy)
+        self.max_x = max(ox)
+        self.max_y = max(oy)
+
+        self.x_width = round((self.max_x - self.min_x) // self.resolution)
+        self.y_width = round((self.max_y - self.min_y) // self.resolution)
+        print("Map boundaries and grid size calculated.")
+
+        self.obstacle_map = [[False for _ in range(self.y_width)]
+                             for _ in range(self.x_width)]
+        print("Obstacle map initialization completed.")
+
+        for ix in range(self.x_width):
+            x = self.calc_position(ix, self.min_x)
+            for iy in range(self.y_width):
+                y = self.calc_position(iy, self.min_y)
+                for iox, ioy in zip(ox, oy):
+                    d = math.hypot(iox - x, ioy - y)
+                    if d <= self.robot_radius:
+                        self.obstacle_map[ix][iy] = True
+                        print(f"Obstacle set at grid ({ix}, {iy}).")
+                        break
+
+        print("Obstacle map calculation completed.")
+
     def calc_position(self, index, minp):
-        pos = minp + index
+        pos = minp + index * self.resolution
         return pos
 
-
     def calc_xy_index(self, position, minp):
-        return round(position - minp)
+        return round((position - minp) / self.resolution)
 
     def calc_index(self, node):
         return node.y * self.x_width + node.x
 
-    # def verify_node(self, node):
-    #     if node.x < 0 or node.y < 0 or node.x >= self.x_width or node.y >= self.y_width:
-    #         return False
-    #     if self.obstacle_map[node.y, node.x]:
-    #         return False
-    #     return True
-
     def verify_node(self, node):
         if node.x < 0 or node.y < 0 or node.x >= self.x_width or node.y >= self.y_width:
             return False
-
-        # 计算机器人需要的最小空闲区域半径，以格子数为单位
-        clearance_required = math.ceil(0.3 / self.resolution)  # 0.3m转弯半径对应的格子数
-
-        # 检查机器人周围是否有足够的空间
-        for dx in range(-clearance_required, clearance_required + 1):
-            for dy in range(-clearance_required, clearance_required + 1):
-                # 计算检查点的坐标
-                check_x = node.x + dx
-                check_y = node.y + dy
-
-                # 确保检查点在地图内
-                if check_x < 0 or check_y < 0 or check_x >= self.x_width or check_y >= self.y_width:
-                    continue  # 如果检查点超出地图范围，则跳过
-
-                # 如果检查点是障碍物，则当前节点不满足条件
-                if self.obstacle_map[check_y, check_x]:
-                    return False
-
+        if self.obstacle_map[node.x][node.y]:
+            return False
         return True
 
     def calc_final_path(self, goal_node, closed_set):
@@ -139,57 +146,37 @@ class Dijkstra:
 
         return rx, ry
 
-
-
-    def calculate_total_distance(self, rx, ry):
-        """
-        Calculate the total distance of the path based on the resolution.
-        """
-        total_distance = 0.0
-        for i in range(1, len(rx)):
-            dx = rx[i] - rx[i - 1]
-            dy = ry[i] - ry[i - 1]
-            distance = math.sqrt(dx ** 2 + dy ** 2) * self.resolution
-            total_distance += distance
-        return total_distance
-
-
 def main():
-
     print("Starting main program...")
 
     obstacle_map = np.load("../map/obstacle_map.npy").astype(np.bool_)
+    # obstacle_map = np.logical_not(obstacle_map)
 
-    sx, sy = 345, 95  # 起点
-    gx, gy = 20, 705  # 终点
-    grid_size = 0.2  # 网格大小
-    robot_radius = 0.3  # 机器人半径，根据障碍物密度调整
+    sx, sy = 345, 95  # Start point
+    gx, gy = 470, 475  # Goal point
+    grid_size = 0.2  # Grid size (0.2m x 0.2m)
+    robot_radius = 0.3  # Robot radius
 
-    if True:
-        # plt.plot(ox, oy, '.k')  # 障碍物黑色
+    if show_animation:
         plt.imshow(obstacle_map, cmap='gray', origin='upper')
-        plt.plot(sx, sy, 'og')  # 起点绿色
-        plt.plot(gx, gy, 'xb')  # 终点蓝色
+        plt.plot(sx, sy, 'og')  # Start point in green
+        plt.plot(gx, gy, 'xb')  # Goal point in blue
         plt.grid(True)
-        plt.axis('equal')  # 坐标轴刻度间距等长
+        plt.axis('equal')
         plt.show()
 
     dijkstra = Dijkstra(obstacle_map, grid_size, robot_radius)
     rx, ry = dijkstra.planning(sx, sy, gx, gy)
 
-    # Calculate and print the total distance
-    total_distance = dijkstra.calculate_total_distance(rx, ry)
-    print(f"Total distance of the path: {total_distance} meters")
-
     obstacle_map = np.logical_not(obstacle_map)
-    if True:
+    if show_animation:
         plt.imshow(obstacle_map, cmap='gray', origin='upper')
-        plt.plot(sx, sy, "og")  # 起点绿色
-        plt.plot(gx, gy, "xb")  # 终点蓝色
-        plt.plot(rx, ry, "-r")  # 路径红色
+        plt.plot(sx, sy, "og")  # Start point in green
+        plt.plot(gx, gy, "xb")  # Goal point in blue
+        plt.plot(rx, ry, "-r")  # Path in red
         plt.grid(True)
         plt.axis("equal")
         plt.show()
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -11,7 +11,7 @@ def dilate_obstacles(map, radius):
     radius = int(round(radius * 2))  # Adjust the radius to be in terms of grid units, then round it
     # Create a structural element that simulates a circle of the given radius
     struct = np.array([[euclidean((x - radius, y - radius), (0, 0)) <= radius for x in range(2 * radius + 1)] for y in range(2 * radius + 1)])
-    return binary_dilation(map == 0, structure=struct).astype(map.dtype)
+    return binary_dilation(map == 1, structure=struct).astype(map.dtype)
 
 def get_path(previous, current):
     path = [current]
@@ -19,23 +19,28 @@ def get_path(previous, current):
     while any(previous[current[1], current[0], :]):
         next_node = previous[current[1], current[0], :].astype(int)
         if np.any(next_node != current):
-            step_distance = euclidean(current, next_node) * 0.2  # Each grid represents 0.2 meters
+            step_distance = euclidean(current, next_node) * 0.2 # Each grid represents 0.2 meters
             distance += step_distance
             current = next_node
             path.insert(0, current)
     return np.array(path), distance
 
 
-def heuristic(node, goal, resolution=0.2):
+def heuristic(node, goal):
     """
     Heuristic function, using Euclidean distance for calculation.
     :param node: Current node coordinates.
     :param goal: Target node coordinates.
-    :param resolution: Map resolution.
     """
     dis = euclidean(node, goal)
     print(f"Heuristic calculated for node {node} to goal {goal}: {dis}")
     return dis
+
+
+# def heuristic(n1, n2):
+#     w = 1.0  # 单个启发函数的权重，如果有多个启发函数，权重可以设置的不一样
+#     d = w * math.hypot(n1.x - n2.x, n1.y - n2.y)  # 当前网格和终点距离
+#     return d
 
 def get_motion_model():
     # [dx, dy, cost]
@@ -106,7 +111,7 @@ def visualize_map_and_path(map, path):
 def find_and_visualize_path(map, locations):
     # Extract the coordinates of the start and goal locations
     start = locations.get('start')
-    goal = locations.get('store')  # Or other target location keywords
+    goal = locations.get('food')  # Or other target location keywords
     if not start or not goal:
         print("Start or goal location not provided in locations dictionary.")
         return
@@ -115,7 +120,7 @@ def find_and_visualize_path(map, locations):
     path, distance = astar(map, start, goal)
 
     # If a path is found, print the distance and visualize it
-    if path.size > 0:
+    if len(path) > 0:
         print(f"Path from {start} to {goal}: Distance = {distance} meters")  # Print the distance
         visualize_map_and_path(map, path)
     else:
@@ -135,22 +140,42 @@ def visualize_map_and_multiple_paths(map, paths):
     plt.title('Map and Multiple Paths')
     plt.show()
 
+# def find_and_visualize_all_paths(map, locations):
+#     total_distance = 0.0
+#     paths = []
+#     distances = {}
+#     for start_key, start in locations.items():
+#         for goal_key, goal in locations.items():
+#             if start_key != goal_key:
+#                 path, distance = astar(map, start, goal)
+#                 if path.size > 0:
+#                     paths.append(path)
+#                     distances[(start_key, goal_key)] = distance
+#                     total_distance += distance
+#     # most_efficient_path, most_efficient_distance = solve_tsp(distances)
+#     print(f"Total distance: {total_distance} meters")
+#     # print(f"Most efficient path: {most_efficient_path} with distance: {most_efficient_distance} meters")
+#     visualize_map_and_multiple_paths(map, paths)
+
 def find_and_visualize_all_paths(map, locations):
     total_distance = 0.0
     paths = []
     distances = {}
-    for start_key, start in locations.items():
-        for goal_key, goal in locations.items():
-            if start_key != goal_key:
-                path, distance = astar(map, start, goal)
-                if path.size > 0:
-                    paths.append(path)
-                    distances[(start_key, goal_key)] = distance
-                    total_distance += distance
+    location_keys = list(locations.keys())
+    for i, start_key in enumerate(location_keys):
+        for goal_key in location_keys[i+1:]:
+            start = locations[start_key]
+            goal = locations[goal_key]
+            path, distance = astar(map, start, goal)
+            if path.size > 0:
+                paths.append(path)
+                distances[(start_key, goal_key)] = distance
+                total_distance += distance
     # most_efficient_path, most_efficient_distance = solve_tsp(distances)
     print(f"Total distance: {total_distance} meters")
     # print(f"Most efficient path: {most_efficient_path} with distance: {most_efficient_distance} meters")
     visualize_map_and_multiple_paths(map, paths)
+
 
 
 def solve_tsp(distances):
@@ -201,9 +226,11 @@ map_dilated = dilate_obstacles(map, radius=1.5)  # Each grid is 0.2m, so a radiu
 locations = {
     'start': [345, 95],# Start from the level 2 Escalator
     # 'snacks': [470, 475],  # Garrett Popcorn
-    'store':  [20, 705],    # DJI Store
+    # 'store':  [20, 705],    # DJI Store
     # 'movie':  [940, 545],   # Golden Village
-    # 'food':   [535, 800],   # PUTIEN
+    'food':   [535, 800],   # PUTIEN
 }
-# find_and_visualize_all_paths(map, locations)
-find_and_visualize_path(map, locations)
+plt.imshow(map_dilated)
+plt.show()
+# find_and_visualize_all_paths(map_dilated, locations)
+find_and_visualize_path(map_dilated, locations)
